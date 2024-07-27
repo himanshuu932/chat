@@ -1,11 +1,13 @@
-
-
-        /* getting group id*/
+/* getting group id*/
         document.addEventListener('DOMContentLoaded', async (event) => {
             const urlParams = new URLSearchParams(window.location.search);
             const groupId = urlParams.get('groupId');
             const changeImagePopup=document.getElementById('change-image-popup');
-           var currentImageId="";
+            const uploadForm = document.getElementById('uploadForm');
+            const uploadImageButton=document.getElementById('upload-image-button');
+            const imageUploadInput = document.querySelector('input[type="file"]');
+            
+            var currentImageId="";
             if (!groupId) {
                 alert('Group ID not found!');
                 window.location.href = "/groups.html";
@@ -15,7 +17,7 @@
         
            
             async function fetchGroupInfo(groupId) {
-    try {
+    try {await fetchImageId();  
         const response = await fetch(`/group/${groupId}`);
 
         if (response.ok) {
@@ -78,9 +80,9 @@
         console.error('Error in fetchGroupInfo:', error);
         alert('An unexpected error occurred while fetching group information');
     }
-}
+            }
 
-async function fetchAllUsernames() {
+            async function fetchAllUsernames() {
     try {
         const response = await fetch('/get-all-usernames');
 
@@ -190,9 +192,9 @@ async function fetchAllUsernames() {
     } catch (error) {
         console.error('Error fetching all usernames:', error);
     }
-}
+            }
 
-async function checkIfUserIsAdmin(userId) {
+            async function checkIfUserIsAdmin(userId) {
     try {
         const response = await fetch(`/is-admin/${groupId}/${userId}`);
         if (response.ok) {
@@ -206,71 +208,38 @@ async function checkIfUserIsAdmin(userId) {
         console.error('Error checking admin status:', error);
         return false;
     }
-}
+            }
 
-async function checkIfUserIsAdmin(userId) {
-    try {
-        const response = await fetch(`/is-admin/${groupId}/${userId}`);
-        if (response.ok) {
-            const data = await response.json();
-            return data.isAdmin; // Assuming the response contains { isAdmin: true/false }
-        } else {
-            console.error('Error checking admin status');
-            return false;
-        }
-    } catch (error) {
-        console.error('Error checking admin status:', error);
-        return false;
-    }
-}
+            await fetchGroupInfo(groupId);
 
             document.getElementById('add-user-button').addEventListener('click', () => {
             fetchAllUsernames();
             });
-
-            await fetchGroupInfo(groupId);
-
             document.getElementById('back-button').addEventListener('click', () => {
                 window.location.href = `chat.html?groupId=${groupId}`;
             });
-
             document.getElementById('chat-button').addEventListener('click', () => {
                 window.location.href = `chat.html?groupId=${groupId}`;
             });
 
            
-    // Function to hide popup menu
-    function hidePopupMenu() {
-        document.getElementById('popup-menu').style.display = 'none';
-    }
+  
 
     // Hide popup menu when clicking outside of it
-    document.addEventListener('click', (event) => {
+            document.addEventListener('click', (event) => {
         const popupMenu = document.getElementById('popup-menu');
         const addButton = document.getElementById('add-user-button');
 
         if (!popupMenu.contains(event.target) && event.target !== addButton) {
-            hidePopupMenu();
+            document.getElementById('popup-menu').style.display = 'none';
         }
         if (!changeImagePopup.contains(event.target) && event.target !== document.getElementById('upload-image-button')) {
           changeImagePopup.style.display='none';
         }
-    });
+            });
         
-   
- 
-    
-       // Elements
-     
-    
-              
-            const uploadForm = document.getElementById('uploadForm');
-            const uploadImageButton=document.getElementById('upload-image-button');
-            const imageUploadInput = document.querySelector('input[type="file"]');
-            let images = [];
-            let currentIndex = 0;
-         
-            uploadImageButton.addEventListener('click', function() {
+
+          uploadImageButton.addEventListener('click', function() {
                 // Toggle the visibility of the popup
                 if (changeImagePopup.style.display === 'none' || changeImagePopup.style.display === '') {
                     changeImagePopup.style.display = 'block';
@@ -278,22 +247,16 @@ async function checkIfUserIsAdmin(userId) {
                     changeImagePopup.style.display = 'none';
                 }
             });
-                 async function fetchImageId() {
-            // The group ID you're interested in
 
+          async function fetchImageId() {
             try {
-                // Send GET request to the server
+               
                 const response = await fetch(`/get-group-image/${groupId}`);
-
-                // Check if the response is OK (status code 200-299)
                 if (response.ok) {
-                    // Parse the JSON response
                     const data = await response.json();
-
-                    // Check if imageId exists in the response
-                    if (data.imageId) {
+                     if (data.imageId) {
                         currentImageId=data.imageId;
-                       await fetchImage(data.imageId);
+                        await fetchImage(data.imageId);
                     } else {
                         alert('No image ID found for the specified group.');
                     }
@@ -301,15 +264,13 @@ async function checkIfUserIsAdmin(userId) {
                     alert(`Error: ${response.status} ${response.statusText}`);
                 }
             } catch (error) {
-                // Handle any errors that occur during the fetch
+               
                 alert(`Error: ${error.message}`);
             }
         }
         
-        
-        
-            async function fetchImage(imageId) {
-    try {
+         async function fetchImage(imageId) {
+         try {
         // Send GET request to fetch image data and metadata
         const response = await fetch(`/images/id/${imageId}`);
 
@@ -366,7 +327,7 @@ async function checkIfUserIsAdmin(userId) {
                 if (data.fileId) {
                     
                     changeImagePopup.style.display='none';
-                    updateGroup(data.fileId);
+                   await updateGroup(data.fileId);
                 } else {
                     alert(`Upload failed: ${data.error}`);
                 }
@@ -374,7 +335,8 @@ async function checkIfUserIsAdmin(userId) {
                 alert(`Error: ${err.message}`);
             }
         });
-            async function deleteimg(){
+
+        async function deleteimg(){
                 try {
                     const response = await fetch(`/images/id/${currentImageId}`, {
                       method: 'DELETE'
@@ -391,11 +353,13 @@ async function checkIfUserIsAdmin(userId) {
                 catch (err) {
                     console.error('Error:', err);
                   }
-            }// Fetch all images from the server
-         async function updateGroup(imageId)
-         {  alert(`${imageId}  .....${ currentImageId}`);
+            }
+
+        async function updateGroup(imageId)
+         { 
             if( currentImageId!='66a53230fbc60a6e879983d2')
             await deleteimg();
+
             try {
                 const response = await fetch(`/group/${groupId}/image`, {
                     method: 'POST',
@@ -420,154 +384,8 @@ async function checkIfUserIsAdmin(userId) {
               alert(error);
             }
                       }                                                    
-            // Initialize by fetching images
-            window.onload = await fetchImageId;      
-          
-       
-       
-       
-            document.addEventListener('DOMContentLoaded', function() {
-                const uploadForm = document.getElementById('uploadForm');
-                const uploadImageButton=document.getElementById('upload-image-button');
-                const imageUploadInput = document.querySelector('input[type="file"]');
-                let images = [];
-                let currentIndex = 0;
-                const groupId = "66a2980618ebe2cdfbb04a18";
-                uploadImageButton.addEventListener('click', function() {
-                    // Toggle the visibility of the popup
-                    if (changeImagePopup.style.display === 'none' || changeImagePopup.style.display === '') {
-                        changeImagePopup.style.display = 'block';
-                    } else {
-                        changeImagePopup.style.display = 'none';
-                    }
-                });
-                async function fetchImageId() {
-                // The group ID you're interested in
-    
-                try {
-                    // Send GET request to the server
-                    const response = await fetch(`/get-group-image/${groupId}`);
-    
-                    // Check if the response is OK (status code 200-299)
-                    if (response.ok) {
-                        // Parse the JSON response
-                        const data = await response.json();
-    
-                        // Check if imageId exists in the response
-                        if (data.imageId) {
-                            
-                          await  fetchImage(data.imageId);
-                        } else {
-                            alert('No image ID found for the specified group.');
-                        }
-                    } else {
-                        alert(`Error: ${response.status} ${response.statusText}`);
-                    }
-                } catch (error) {
-                    // Handle any errors that occur during the fetch
-                    alert(`Error: ${error.message}`);
-                }
-            }
-            
-            
-            
-                async function fetchImage(imageId) {
-        try {
-            // Send GET request to fetch image data and metadata
-            const response = await fetch(`/images/id/${imageId}`);
-    
-            // Check if the response is OK
-            if (response.ok) {
-                // Extract filename from the response headers
-                const contentDisposition = response.headers.get('Content-Disposition');
-                let filename = 'image';
-                if (contentDisposition) {
-                    const matches = /filename="(.+)"/.exec(contentDisposition);
-                    if (matches) {
-                        filename = matches[1];
-                    }
-                }
-    
-                // Create a Blob from the response
-                const blob = await response.blob();
-    
-                // Create an object URL for the Blob
-                const imageUrl = URL.createObjectURL(blob);
-    
-                // Set the image source and filename to display or download
-                const imgElement = document.getElementById('group-image');
-                imgElement.src = imageUrl;
-                imgElement.alt = filename;
                 
-    
-                // Optionally, if you want to download the image with the filename
-              
-            } else {
-                alert(`Error: ${response.status} ${response.statusText}`);
-            }
-        } catch (error) {
-            // Handle any errors that occur during the fetch
-            alert(`Error: ${error.message}`);
-        }
-    }
-        
-            // Handle image upload
-            uploadForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-    
-                const formData = new FormData();
-                formData.append('image', imageUploadInput.files[0]);
-    
-                try {
-                    const response = await fetch('/upload', {
-                        method: 'POST',
-                        body: formData
-                    });
-    
-                    const data = await response.json();
-    
-                    if (data.fileId) {
-                        
-                        
-                       await updateGroup(data.fileId);
-                    } else {
-                        alert(`Upload failed: ${data.error}`);
-                    }
-                } catch (err) {
-                    alert(`Error: ${err.message}`);
-                }
-            });
-                // Fetch all images from the server
-             async function updateGroup(imageId)
-             {  alert(imageId);
-    
-                try {
-                    const response = await fetch(`/group/${groupId}/image`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ imageId: imageId }),
-                    });
-    
-                    const result = await response.json();
-    
-                 
-                    if (response.ok) {
-                      alert(`Success: ${result.group.name} updated with new image ID.`);
-                     await fetchImage(imageId);
-                      
-                    } else {
-                        alert(result);
-                    }
-                } catch (error) {
-                  alert(error);
-                }
-                          }                                                    
-                // Initialize by fetching images
-                window.onload = fetchImageId; 
-            });
-      
+          
        
        
        

@@ -293,7 +293,7 @@ async function checkIfUserIsAdmin(userId) {
                     // Check if imageId exists in the response
                     if (data.imageId) {
                         currentImageId=data.imageId;
-                        fetchImage(data.imageId);
+                       await fetchImage(data.imageId);
                     } else {
                         alert('No image ID found for the specified group.');
                     }
@@ -374,26 +374,28 @@ async function checkIfUserIsAdmin(userId) {
                 alert(`Error: ${err.message}`);
             }
         });
-            // Fetch all images from the server
+            async function deleteimg(){
+                try {
+                    const response = await fetch(`/images/id/${currentImageId}`, {
+                      method: 'DELETE'
+                    });
+            
+                    if (response.ok) {
+                      alert('Image deleted successfully');
+                      // Refresh the image list after deletion
+                    } else {
+                      const data = await response.json();
+                      alert('Deletion failed: ' + data.error);
+                    }
+                }
+                catch (err) {
+                    console.error('Error:', err);
+                  }
+            }// Fetch all images from the server
          async function updateGroup(imageId)
          {  alert(`${imageId}  .....${ currentImageId}`);
             if( currentImageId!='66a53230fbc60a6e879983d2')
-            try {
-                const response = await fetch(`/images/id/${currentImageId}`, {
-                  method: 'DELETE'
-                });
-        
-                if (response.ok) {
-                  alert('Image deleted successfully');
-                  // Refresh the image list after deletion
-                } else {
-                  const data = await response.json();
-                  alert('Deletion failed: ' + data.error);
-                }
-            }
-            catch (err) {
-                console.error('Error:', err);
-              }
+            await deleteimg();
             try {
                 const response = await fetch(`/group/${groupId}/image`, {
                     method: 'POST',
@@ -408,7 +410,7 @@ async function checkIfUserIsAdmin(userId) {
              
                 if (response.ok) {
                   alert(`Success: ${result.group.name} updated with new image ID.`);
-                  fetchImage(imageId);
+                  await fetchImage(imageId);
 
                   
                 } else {
@@ -419,7 +421,7 @@ async function checkIfUserIsAdmin(userId) {
             }
                       }                                                    
             // Initialize by fetching images
-            window.onload = fetchImageId;      
+            window.onload = await fetchImageId;      
           
        
        
@@ -454,7 +456,7 @@ async function checkIfUserIsAdmin(userId) {
                         // Check if imageId exists in the response
                         if (data.imageId) {
                             
-                            fetchImage(data.imageId);
+                          await  fetchImage(data.imageId);
                         } else {
                             alert('No image ID found for the specified group.');
                         }
@@ -527,7 +529,7 @@ async function checkIfUserIsAdmin(userId) {
                     if (data.fileId) {
                         
                         
-                        updateGroup(data.fileId);
+                       await updateGroup(data.fileId);
                     } else {
                         alert(`Upload failed: ${data.error}`);
                     }
@@ -553,7 +555,7 @@ async function checkIfUserIsAdmin(userId) {
                  
                     if (response.ok) {
                       alert(`Success: ${result.group.name} updated with new image ID.`);
-                      fetchImage(imageId);
+                     await fetchImage(imageId);
                       
                     } else {
                         alert(result);

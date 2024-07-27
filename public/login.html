@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Slide Navbar</title>
+    <link rel="stylesheet" type="text/css" href="slide navbar style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Jost', sans-serif;
+            background: linear-gradient(to bottom, #00796b, #115343, #00796b);
+              
+        }
+        .main {
+            width: 350px;
+            height: 500px;
+            background:  #00796b;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 10px 20px 50px #000;
+        }
+        .main1 {
+            width: 500px;
+            height: 500px;
+            background: rgb(231, 224, 224);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            position: relative; /* To position the animated text */
+        }
+        #chk {
+            display: none;
+        }
+        .signup {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        label {
+            color: #fff;
+            font-size: 2.3em;
+            justify-content: center;
+            display: flex;
+            margin: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: .5s ease-in-out;
+        }
+        input {
+            width: 60%;
+            height: 10px;
+            background: #e0dede;
+            justify-content: center;
+            display: flex;
+            margin: 20px auto;
+            padding: 12px;
+            border: none;
+            outline: none;
+            border-radius: 5px;
+        }
+        button {
+            width: 60%;
+            height: 40px;
+            margin: 10px auto;
+            justify-content: center;
+            display: block;
+            color: #fff;
+            background: #00796b;
+            font-size: 1em;
+            font-weight: bold;
+            margin-top: 30px;
+            outline: none;
+            border: none;
+            border-radius: 5px;
+            transition: .2s ease-in;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #6d44b8;
+        }
+        .login {
+            height: 460px;
+            background: #eee;
+            border-radius: 60% / 10%;
+            transform: translateY(-180px);
+            transition: .8s ease-in-out;
+        }
+        .login label {
+            color: #00796b;
+            transform: scale(.6);
+        }
+        #chk:checked ~ .login {
+            transform: translateY(-500px);
+        }
+        #chk:checked ~ .login label {
+            transform: scale(1);
+        }
+        #chk:checked ~ .signup label {
+            transform: scale(.6);
+        }
+        #messagelogin,#messagesg {
+            color: red;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+        .animated-text {
+            font-size: 3em;
+            font-weight: bold;
+            color: #00796b;
+            text-align: center;
+            animation: wave 2.5s infinite;
+        }
+        @keyframes wave {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+    
+    #image-frame {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background: #e0e0e0;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    
+    #image-frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    </style>
+   
+</head>
+<body>
+    <div class="main1">
+        <div class="animated-text">Welcome!!<br> <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" fill=" #00796b" class="bi bi-whatsapp" viewBox="0 0 16 16">
+            <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/>
+          </svg></div>
+       
+    </div>
+    <div class="main">  
+        <input type="checkbox" id="chk" aria-hidden="true" checked>
+
+        <div class="signup">
+            <form id="signup-form">
+                <label for="chk" aria-hidden="true">Sign up</label>
+                <p id="messagesg" style="color: red;"></p>
+                <input type="text" id="namesg" placeholder="Name" required>
+                <input type="email" id="emailsg" placeholder="Email" required>
+                <input type="password" id="passwordsg" placeholder="Password" required>
+                <button type="submit">Sign Up</button>
+            </form>
+        </div>
+
+        <div class="login">
+            <form id="login-form">
+                <label for="chk" aria-hidden="true">Login</label>
+                <p id="messagelogin" style="color: red;"></p>
+                <input type="email" id="emaillogin" placeholder="Email" required>
+                <input type="password" id="passwordlogin" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </div>
+    <script src="lg.js"></script>
+</body>
+</html>

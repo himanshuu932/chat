@@ -85,7 +85,7 @@
     flex-direction: column;
     position: relative;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    overflow: hidden; /* Ensure content doesn't overflow */
+    /* Ensure content doesn't overflow */
 }
 
 /* Message content */
@@ -232,29 +232,33 @@
             });
 
             socket.on('chat message', (data) => {
-                const { message } = data;
-                const item = document.createElement('li');
-                item.className = message.userName === userName ? 'message-sent' : 'message-received';
+    const { message } = data;
+    const item = document.createElement('li');
+    item.className = message.userName === userName ? 'message-sent' : 'message-received';
 
-                const header = document.createElement('div');
-                header.className = 'message-header';
-                header.textContent = message.userName;
+    const header = document.createElement('div');
+    header.className = 'message-header';
+    header.textContent = message.userName;
 
-                const content = document.createElement('div');
-                content.textContent = message.text;
+    const content = document.createElement('div');
+    content.className = 'message-content'; // Add class for styling
+    content.textContent = message.text;
 
-                const timestamp = document.createElement('div');
-                timestamp.className = 'message-timestamp';
-                timestamp.textContent = message.timestamp;
+    const timestamp = document.createElement('div');
+    timestamp.className = 'message-timestamp';
+    timestamp.textContent = message.timestamp;
 
-                item.appendChild(header);
-                item.appendChild(content);
-                item.appendChild(timestamp);
+    item.appendChild(header);
+    item.appendChild(content);
+    item.appendChild(timestamp);
 
-                messages.appendChild(item);
-                window.scrollTo(0, document.body.scrollHeight);
-                notificationSound.play(); // Play sound on message received
-            });
+    messages.appendChild(item);
+
+    // Scroll to the bottom of the messages container
+    messages.scrollTop = messages.scrollHeight;
+
+    notificationSound.play(); // Play sound on message received
+});
 
             // Toggle chat box and info container
             infoToggle.addEventListener('click', () => {

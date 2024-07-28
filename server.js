@@ -8,14 +8,14 @@ const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const User = require('./models/User');
 const Group = require('./models/Group');
-
+const fs = require('fs');
 const multer = require('multer');
 const { GridFSBucket } = require('mongodb');
 const stream = require('stream');
  // Adjust the path as necessary
  const cors = require('cors');
  
- 
+   
 
 const app = express();
 const server = http.createServer(app);
@@ -61,6 +61,40 @@ app.post('/signup', async (req, res) => {
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
+    }
+});
+app.get('/messages/:groupId', async (req, res) => {
+    try {
+        const groupId = req.params.groupId;
+        
+        // Find the group by its ID
+        const groupChat = await Group.findById(groupId);
+       
+        if (groupChat) {
+            res.json(groupChat.messages);
+        } else {
+            res.status(404).send('No messages found for this group');
+        }
+    } catch (err) {
+       
+        res.status(500).send('Error fetching messages');
+    }
+});
+
+app.post('/message', async (req, res) => {
+    const { groupId, userName, text, timestamp } = req.body;
+
+    try {
+        // Find the group chat and push the new message
+        const groupChat = await Group.findOneAndUpdate(
+            { _id: groupId }, // Find the group by its ID
+            { $push: { messages: { timestamp, userName, text } } }, // Push new message to messages array
+            { new: true, upsert: true } // Return the updated document, create if it doesn't exist
+        );
+        res.status(201).json(groupChat); // Return the updated groupChat document
+    } catch (err) {
+        console.log(err);
+        res.status(500).send('Error saving message');
     }
 });
 
@@ -111,6 +145,7 @@ const Image = require('./models/Image.js');
 
 
 // Group management
+
 app.post('/groups', async (req, res) => {
     const { name, userId, password } = req.body;
 
@@ -133,7 +168,8 @@ app.post('/groups', async (req, res) => {
             admin: [userId],
             members: [userId],
             password,
-            imageId:"66a53230fbc60a6e879983d2" // Initialize imageId to null if not provided
+            imageId: "66a53230fbc60a6e879983d2", // Initialize imageId to null if not provided
+            messages: [] // Initialize messages as an empty array
         });
 
         await group.save();
@@ -142,6 +178,7 @@ app.post('/groups', async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+
 
 
 app.get('/groups', async (req, res) => {
@@ -385,6 +422,18 @@ app.get('/get-group-image/:groupId', async (req, res) => {
 });
 
 
+app.get('/chat-file/:groupId', (req, res) => {
+    const groupId = req.params.groupId;
+    const chatFilePath = path.join(__dirname, 'chats', `${groupId}.txt`);
+
+    fs.readFile(chatFilePath, 'utf8', (err, data) => {
+        if (err) {
+            res.status(500).send('Error reading chat file');
+            return;
+        }
+        res.send(data);
+    });
+});
 
 // Serve socket.io.js file directly
 app.get("/socket.io/socket.io.js", (req, res) => {
@@ -409,9 +458,18 @@ io.on('connection', (socket) => {
         socket.join(groupName);
         io.to(groupName).emit('user joined', userName);
 
-        // Handle chat messages within the group
         socket.on('chat message', (data) => {
-            io.to(groupName).emit('chat message', data);
+            const { groupId, message } = data;
+            const formattedMessage = `${message.timestamp} - ${message.userName} - ${message.text}\n`;
+    
+            // Save the message to a file
+            fs.appendFile(path.join(__dirname, 'chats', `${groupId}.txt`), formattedMessage, (err) => {
+                if (err) {
+                    console.error('Error writing to file:', err);
+                }
+            });
+    
+            io.to(groupId).emit('chat message', data);
         });
 
         // Handle user leaving explicitly

@@ -15,32 +15,36 @@
         height: 100vh;
     }
     
-    #container {
-        width: 100%;
-         background: linear-gradient(to right, #e0f7fa, #b9fbc0);
-        border-radius: 15px;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-        display: flex;
-        flex-direction: column;
-        height: 90vh;
-        padding-top: 1px; /* Add padding to make room for the fixed header */
-    }
-    
+    .container {
+            width: 100%;
+            background: linear-gradient(to right, #e0f7fa, #b9fbc0);
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+            padding-top: 100px; /* Adjusted padding to fit header */
+            box-sizing: border-box;
+        }
     #header {
         display: flex;
-        position: fixed;
-        top: 0;
-        width: calc(100% ); /* Adjust width to fit within the viewport */
-        /* Optional: set a maximum width if needed */
-        justify-content: space-between;
+        
         align-items: center;
         padding: 15px 25px;
         background: #00796b;
         color: white;
         border-bottom: 2px solid #004d40;
-        z-index: 1000; /* Ensure the header is above other content */
-        margin: 0 auto; /* Center the header within the viewport */
-        box-sizing: border-box; /* Include padding and borders in the element's total width */
+        position: fixed;
+        top: 0;
+        width: 100%;
+        box-sizing: border-box;
+        z-index: 1000;
+        justify-content: space-between; /* Ensures space between icon/text and button */
+    }
+    
+    #header .header-content {
+        display: flex;
+        align-items: center;
     }
     
     #header h2 {
@@ -201,23 +205,303 @@
             margin-top: 10px;
         }
     }
-    </style>
+    #nav-bar {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background: #004d40;
+            padding: 10px 0;
+            border-bottom: 2px solid #003d33;
+            position: fixed;
+            top: 80px; /* Adjust this to account for header height */
+            width: 100%;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+
+        #nav-bar a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        #nav-bar a:hover {
+            background: #003d33;
+            color: #e0f7fa;
+        }
+        .container {
+    display: none; /* Hide all containers by default */
+}
+
+.container.active {
+    display: flex; /* Show only the active container */
+}
+#all {
+    display: none; /* Initially hidden */
+    padding: 10px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    position: absolute; /* Position it correctly within the parent */
+    top: 70px; /* Adjust as needed */
+    left: 10px; /* Adjust as needed */
+    z-index: 1000;
+}
+
+.user-item {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.user-item:last-child {
+    border-bottom: none;
+}
+
+.user-item:hover {
+    background: #f1f8e9;
+}
+
+         </style>
 </head>
 <body>
-    <div id="container">
-        <div id="header">
+    <div id="header">
+        <div class="header-content">
+            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="#ffffff" class="bi bi-whatsapp" viewBox="0 0 16 16">
+                <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/>
+            </svg>
             <h2>Group Management</h2>
-            <button id="toggle-form" onclick="toggleForm()">+</button>
         </div>
-        <div id="form-container">
-            <input id="input-name" type="text" placeholder="Group Name" required>
-            <input id="input-password" type="password" placeholder="Password" required>
-            <button onclick="createGroup()">Create Group</button>
-        </div>
-        <div id="error-message"></div>
-        <ul id="groups"></ul>
+        <button id="toggle-form" onclick="toggleForm()">+</button>
     </div>
+    <nav id="nav-bar">
+        <a  onclick="showContainer('container1')">Chats</a>
+        <a  onclick="showContainer('container2')">Groups</a>
+        <a  onclick="showContainer('container3')">Calls</a>
+    </nav>
+   
+    <div id="container1" class="container active">
+        <div id="all">
+            <h2>User List</h2>
+            <ul id="user-list"></ul>
+        </div>
+    </div>
+    
+    
+    <div id="container2" class="container">
+        <ul id="groups"></ul>
+         </div>
+    <div id="container3" class="container">
+        <h2>Container 2</h2>
+        <div id="container">
+             <div id="form-container">
+                 <input id="input-name" type="text" placeholder="Group Name" required>
+                 <input id="input-password" type="password" placeholder="Password" required>
+                 <button onclick="createGroup()">Create Group</button>
+             </div>
+         </div>
+        <p>Integer eu nisi sit amet erat sollicitudin feugiat. In hac habitasse platea dictumst.</p>
+    </div>
+    <script >
+   async function fetchAllUsernames() {
+    try {
+        const response = await fetch('/get-all-usernames');
+        if (response.ok) {
+            const data = await response.json();
+            const { users } = data;
 
-    <script src="js.js"></script>
+            if (users && users.length > 0) {
+                const userList = document.getElementById('user-list');
+                userList.innerHTML = ''; // Clear existing content
+
+                // Sort users alphabetically
+                users.sort((a, b) => a.name.localeCompare(b.name));
+
+                users.forEach(user => {
+                    const li = document.createElement('li');
+                    li.textContent = user.name;
+                    userList.appendChild(li);
+                });
+            }
+        } else {
+            console.error('Error fetching all usernames');
+        }
+    } catch (error) {
+        console.error('Error fetching all usernames:', error);
+    }
+}
+
+function showContainer(containerId) {
+    // Hide all containers
+    const containers = document.querySelectorAll('.container');
+    containers.forEach(container => {
+        container.classList.remove('active');
+    });
+    
+    // Show the selected container
+    const activeContainer = document.getElementById(containerId);
+    if (activeContainer) {
+        activeContainer.classList.add('active');
+        if(containerId === 'container1')
+            fetchAllUsernames();
+    }
+}
+
+    function toggleForm() {
+        const formContainer = document.getElementById('form-container');
+        formContainer.style.display = formContainer.style.display === 'none' || formContainer.style.display === '' ? 'flex' : 'none';
+    }
+    
+    async function createGroup() {
+        const name = document.getElementById('input-name').value;
+        const password = document.getElementById('input-password').value;
+        const userId = localStorage.getItem("userId");
+        if (!name || !password) {
+            document.getElementById('error-message').textContent = 'Both fields are required.';
+            return;
+        }
+    
+        const response = await fetch('/groups', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, userId, password })
+        });
+    
+        const result = await response.json();
+        if (response.status === 201) {
+            addGroupToList(result);
+            document.getElementById('input-name').value = '';
+            document.getElementById('input-password').value = '';
+            document.getElementById('error-message').textContent = '';
+            document.getElementById('form-container').style.display = 'none';
+        } else {
+            document.getElementById('error-message').textContent = result.error;
+        }
+    }
+    
+    async function deleteGroup(id) {
+        if (confirm('Are you sure you want to delete this group?')) {
+            const userId = localStorage.getItem("userId");
+            const response = await fetch(`/groups/${id}/${userId}`, {
+                method: 'DELETE'
+            });
+    
+            if (response.ok) {
+                document.getElementById(`group-${id}`).remove();
+                alert('Group deleted successfully.');
+            } else {
+                const errorData = await response.json();
+                alert(errorData.error);
+            }
+        }
+    }
+    async function fetchImageId(groupId) {
+        // The group ID you're interested in
+    
+        try {
+            // Send GET request to the server
+            const response = await fetch(`/get-group-image/${groupId}`);
+    
+            // Check if the response is OK (status code 200-299)
+            if (response.ok) {
+                // Parse the JSON response
+                const data = await response.json();
+    
+                // Check if imageId exists in the response
+                if (data.imageId) {
+                  
+                   return data.imageId;
+                } else {
+                    return '66a3c45fdd04765c04b71740';
+                }
+            } else {
+                alert(`Error: ${response.status} ${response.statusText}`);
+            }
+        } catch (error) {
+            // Handle any errors that occur during the fetch
+            alert(`Error: ${error.message}`);
+        }
+    }
+    
+    
+    
+        async function fetchImage(imageId) {
+    try {
+    // Send GET request to fetch image data and metadata
+    const response = await fetch(`/images/id/${imageId}`);
+    
+    // Check if the response is OK
+    if (response.ok) {
+        // Extract filename from the response headers
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let filename = 'image';
+        if (contentDisposition) {
+            const matches = /filename="(.+)"/.exec(contentDisposition);
+            if (matches) {
+                filename = matches[1];
+            }
+        }
+    
+        // Create a Blob from the response
+        const blob = await response.blob();
+    
+        // Create an object URL for the Blob
+        const imageUrl = URL.createObjectURL(blob);
+    
+        return imageUrl;
+        // Optionally, if you want to download the image with the filename
+      
+    } else {
+        return 'https://picsum.photos/1500/1500';
+    }
+    } catch (error) {
+    // Handle any errors that occur during the fetch
+    return 'https://picsum.photos/1500/1500';
+    }
+    }
+    async   function addGroupToList(group) {
+        const groupsList = document.getElementById('groups');
+        const listItem = document.createElement('li');
+        listItem.id = `group-${group._id}`;
+        const imgid=await fetchImageId(group._id);
+       
+        // Use a placeholder image or actual image URL
+        const imageUrl =  await fetchImage(imgid); 
+    
+        listItem.innerHTML = `
+            <div class="group-name">${group.name}</div>
+            <div class="image-frame">
+                <img src="${imageUrl}" alt="${group.name}">
+            </div>
+            <div class="group-buttons">
+                <button onclick="joinGroup('${group._id}')">Join</button>
+                <button onclick="deleteGroup('${group._id}')">Delete</button>
+            </div>
+        `;
+        groupsList.appendChild(listItem);
+    }
+    
+    async function fetchGroups() {
+    const response = await fetch('/groups');
+    const groups = await response.json();
+    
+    groups.forEach(group => {
+    addGroupToList(group);
+    
+    });
+    }
+    
+    function joinGroup(id) {
+        window.location.href = `/chat?groupId=${encodeURIComponent(id)}`;
+    }
+    
+    document.addEventListener('DOMContentLoaded', fetchGroups);
+    </script>
 </body>
+
 </html>

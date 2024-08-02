@@ -228,20 +228,18 @@
             let userName = '';
             const urlParams = new URLSearchParams(window.location.search);
             const groupId = urlParams.get('groupId');
-            let selectedMembers = []; // Array to store selected members
-            
+            var selectedMembers = []; // Array to store selected members
+    
             document.getElementById('fetchMembers').addEventListener('click', async (e) => {
-    // Extract names of selected members and join them into a string
-    const names = selectedMembers.map(member => member.name).join(', ');
-
-    alert(names); // Show names of selected members
-
-    console.log("Fetch Members button clicked");
-    await mem();
-    const popupMenu = document.getElementById('popup-menu');
-    popupMenu.style.display = popupMenu.style.display === 'block' ? 'none' : 'block';
-});
-
+                // Extract names of selected members and join them into a string
+               
+    
+                console.log("Fetch Members button clicked");
+                await mem();
+                const popupMenu = document.getElementById('popup-menu');
+                popupMenu.style.display = popupMenu.style.display === 'block' ? 'none' : 'block';
+            });
+    
             async function mem() {
                 const response = await fetch(`/group/${groupId}`);
                 if (response.ok) {
@@ -286,6 +284,7 @@
                     // Add event listener to handle popup close
                     document.addEventListener('click', (event) => {
                         if (event.target !== document.getElementById('fetchMembers') && event.target.closest('#popup-menu') === null) {
+                            if( document.getElementById('popup-menu').style.display != 'none')
                             updateSelectedMembers();
                             document.getElementById('popup-menu').style.display = 'none';
                         }
@@ -300,7 +299,6 @@
                         name: cb.nextSibling.textContent
                     }));
                 console.log('Selected members:', selectedMembers);
-                
             }
     
             function getUserName() {
@@ -344,55 +342,54 @@
             `;
     
             async function fetchAndDisplayMessages(groupId) {
-    try {
-        const response = await fetch(`/messages/${groupId}`);
-        if (response.ok) {
-            const messages = await response.json();
-            const messagesContainer = document.getElementById('messages');
-            messagesContainer.innerHTML = '';
-
-            const currentUserId = localStorage.getItem('userId'); // Retrieve the current user ID from localStorage
-
-            messages.forEach((message) => {
-                let timestamp = message.timestamp;
-                let excluded = message.excluded;
-                let user = message.userName;
-                let text = message.text;
-                 
-                if (!excluded || !excluded.includes(currentUserId)) { // Check if current user is excluded
-                    const item = document.createElement('li');
-                    item.className = userName === user ? 'message-sent' : 'message-received'; // Adjust based on current user
-
-                    const header = document.createElement('div');
-                    header.className = 'message-header';
-                    header.textContent = user;
-
-                    const content = document.createElement('div');
-                    content.className = 'message-content';
-                    content.textContent = text;
-
-                    const timestampElement = document.createElement('div');
-                    timestampElement.className = 'message-timestamp';
-                    timestampElement.textContent = timestamp;
-
-                    item.appendChild(header);
-                    item.appendChild(content);
-                    item.appendChild(timestampElement);
-
-                    messagesContainer.appendChild(item);
+                try {
+                    const response = await fetch(`/messages/${groupId}`);
+                    if (response.ok) {
+                        const messages = await response.json();
+                        const messagesContainer = document.getElementById('messages');
+                        messagesContainer.innerHTML = '';
+    
+                        const currentUserId = localStorage.getItem('userId'); // Retrieve the current user ID from localStorage
+    
+                        messages.forEach((message) => {
+                            let timestamp = message.timestamp;
+                            let excluded = message.excluded;
+                            let user = message.userName;
+                            let text = message.text;
+    
+                            if (!excluded || !excluded.includes(currentUserId)) { // Check if current user is excluded
+                                const item = document.createElement('li');
+                                item.className = userName === user ? 'message-sent' : 'message-received'; // Adjust based on current user
+    
+                                const header = document.createElement('div');
+                                header.className = 'message-header';
+                                header.textContent = user;
+    
+                                const content = document.createElement('div');
+                                content.className = 'message-content';
+                                content.textContent = text;
+    
+                                const timestampElement = document.createElement('div');
+                                timestampElement.className = 'message-timestamp';
+                                timestampElement.textContent = timestamp;
+    
+                                item.appendChild(header);
+                                item.appendChild(content);
+                                item.appendChild(timestampElement);
+    
+                                messagesContainer.appendChild(item);
+                            }
+                        });
+    
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    } else {
+                        console.error('Error fetching chat messages:', response.statusText);
+                    }
+                } catch (error) {
+                    console.error('Error fetching chat messages:', error);
                 }
-            });
-
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        } else {
-            console.error('Error fetching chat messages:', response.statusText);
-        }
-    } catch (error) {
-        console.error('Error fetching chat messages:', error);
-    }
-}
-
-
+            }
+    
             fetchAndDisplayMessages(groupId);
     
             socket.emit('join group', groupId, userName);
@@ -405,90 +402,98 @@
             const notificationSound = new Audio('/notification.wav');
     
             form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (input.value) {
-        const now = new Date();
-        const formattedTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-        const message = { userName, text: input.value, timestamp: formattedTime };
-
-        socket.emit('chat message', { groupId, message,selectedMembers });
-
-        // Save message to the server
-        try {
-            const response = await fetch('/message', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ groupId, userName, text: input.value, excluded: selectedMembers.map(member => member.id), timestamp: formattedTime }) // Ensure excluded is an array of IDs
-            });
-            if (response.ok) {
-                input.value = '';
-                notificationSound.play();
-            } else {
-                console.error('Error saving message:', response.statusText);
-            }
-        } catch (error) {
-            console.error('Error saving message:', error);
-        }
-    }
-});
-
-async function check(names, message) {
-    alert("Checking exclusion status...");
-    if (names.includes(message.userName)) {
-        // Do not append the message if the sender's name is in the excluded list
-        alert(`${message.userName} is excluded from receiving messages.`);
-        return false; // Exit the function early, message is not appended
-    } else {
-        return true;
-    }
-}
-
-socket.on('chat message', async (data) => {
-    const { message, excluded } = data;
-
-    // Extract names from excluded
-    const names = excluded.map(member => member.name);
-
-    // Debugging: Log message and excluded names
-    alert(`Received message: ${message.text}`);
-    alert(`Excluded names: ${names.join(', ')}`);
-
-    // Check if the sender's name is in the excluded list
-    const shouldDisplay = await check(names, message);
+                e.preventDefault();
+                if (input.value) {
+                    const now = new Date();
+                    const formattedTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+                    const message = { userName, text: input.value, timestamp: formattedTime };
     
-    if (shouldDisplay) {
-        alert("Message passed exclusion check");
+                   
+    
+                    // Save message to the server
+                    try {
+                        const response = await fetch('/message', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ groupId, userName, text: input.value, excluded: selectedMembers.map(member => member.id), timestamp: formattedTime }) // Ensure excluded is an array of IDs
+                        });
+                        if (response.ok) {
+                            socket.emit('chat message', { groupId, message, selectedMembers });
+                            input.value = '';
+                            notificationSound.play();
+                          
+                            // Clear the selected members after sending the message
+                            selectedMembers.length = 0;
 
-        // Append the message if the sender's name is not in the excluded list
-        const item = document.createElement('li');
-        item.className = message.userName === userName ? 'message-sent' : 'message-received'; // Check sender
-
-        const header = document.createElement('div');
-        header.className = 'message-header';
-        header.textContent = message.userName;
-
-        const content = document.createElement('div');
-        content.className = 'message-content';
-        content.textContent = message.text;
-
-        const timestamp = document.createElement('div');
-        timestamp.className = 'message-timestamp';
-        timestamp.textContent = message.timestamp;
-
-        item.appendChild(header);
-        item.appendChild(content);
-        item.appendChild(timestamp);
-
-        messages.appendChild(item);
-
-        messages.scrollTop = messages.scrollHeight;
-
-        notificationSound.play();
-    } else {
-        alert("Message was excluded");
-    }
-});
-
+                            selectedMembers = [];
+                            console.log('Selected members cleared after sending message.');
+                        } else {
+                            console.error('Error saving message:', response.statusText);
+                        }
+                    } catch (error) {
+                        console.error('Error saving message:', error);
+                    }
+                }
+            });
+    
+            async function check(excluded, message) {
+                // Extract names from excluded array
+                const excludedNames = excluded.map(member => member.name);
+    
+                // Debugging: Log each excluded name individually
+                console.log('Excluded names:');
+                excludedNames.forEach(name => console.log(name));
+    
+                // Log the message sender's name
+                console.log(`Message sender: ${message.userName}`);
+    
+                // Log whether the sender's name is excluded
+                const isExcluded = excludedNames.includes(userName);
+                console.log(`Is the message sender excluded? ${isExcluded}`);
+    
+                // Check if message sender's name is in the excluded list
+                return !isExcluded;
+            }
+    
+            socket.on('chat message', async (data) => {
+                const { message, excluded } = data;
+    
+                // Debugging: Log received data
+                console.log('Received data:', data);
+    
+                const shouldDisplay = await check(excluded, message);
+                console.log('Should display:', shouldDisplay);
+    
+                if (shouldDisplay) {
+                    const item = document.createElement('li');
+                    item.className = message.userName === userName ? 'message-sent' : 'message-received';
+    
+                    const header = document.createElement('div');
+                    header.className = 'message-header';
+                    header.textContent = message.userName;
+    
+                    const content = document.createElement('div');
+                    content.className = 'message-content';
+                    content.textContent = message.text;
+    
+                    const timestamp = document.createElement('div');
+                    timestamp.className = 'message-timestamp';
+                    timestamp.textContent = message.timestamp;
+    
+                    item.appendChild(header);
+                    item.appendChild(content);
+                    item.appendChild(timestamp);
+    
+                    messages.appendChild(item);
+    
+                    messages.scrollTop = messages.scrollHeight;
+    
+                    notificationSound.play();
+                } else {
+                    console.log("Message was excluded");
+                }
+            });
+    
             infoToggle.addEventListener('click', () => {
                 window.location.href = `info.html?groupId=${groupId}`;
             });

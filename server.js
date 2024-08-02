@@ -82,13 +82,13 @@ app.get('/messages/:groupId', async (req, res) => {
 });
 
 app.post('/message', async (req, res) => {
-    const { groupId, userName, text, timestamp } = req.body;
+    const { groupId, userName, text, timestamp, excluded } = req.body;
 
     try {
         // Find the group chat and push the new message
         const groupChat = await Group.findOneAndUpdate(
             { _id: groupId }, // Find the group by its ID
-            { $push: { messages: { timestamp, userName, text } } }, // Push new message to messages array
+            { $push: { messages: { timestamp, userName, text, excluded } } }, // Push new message to messages array
             { new: true, upsert: true } // Return the updated document, create if it doesn't exist
         );
         res.status(201).json(groupChat); // Return the updated groupChat document
@@ -97,6 +97,7 @@ app.post('/message', async (req, res) => {
         res.status(500).send('Error saving message');
     }
 });
+
 
 // User login
 app.post('/login', async (req, res) => {
@@ -441,7 +442,7 @@ app.get("/socket.io/socket.io.js", (req, res) => {
 });
 
 io.on('connection', (socket) => {
-    console.log('A user connected');
+    console.log(`A user connected with ID: ${socket.id}`);
 
     // Variable to store group membership
     let currentGroupName = '';
@@ -459,18 +460,13 @@ io.on('connection', (socket) => {
         io.to(groupName).emit('user joined', userName);
 
         socket.on('chat message', (data) => {
-            const { groupId, message } = data;
-            const formattedMessage = `${message.timestamp} - ${message.userName} - ${message.text}\n`;
-    
-            // Save the message to a file
-            fs.appendFile(path.join(__dirname, 'chats', `${groupId}.txt`), formattedMessage, (err) => {
-                if (err) {
-                    console.error('Error writing to file:', err);
-                }
-            });
-    
-            io.to(groupId).emit('chat message', data);
+            const { groupId, message, selectedMembers } = data;
+            const excluded=selectedMembers;
+        
+            // Emit the message to all clients in the specified group
+            io.to(groupId).emit('chat message', { message, excluded });
         });
+        
 
         // Handle user leaving explicitly
         socket.on('user left', (userName) => {

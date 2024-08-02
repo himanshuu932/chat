@@ -5,15 +5,17 @@ const groupSchema = new mongoose.Schema({
     admin: { type: [String], required: true },
     members: { type: [String], required: true },
     password: { type: String, required: true },
-    imageId: { type: mongoose.Schema.Types.ObjectId, ref: 'Image' }, // Updated type
+    imageId: { type: mongoose.Schema.Types.ObjectId, ref: 'Image' },
     messages: [
         {
             timestamp: { type: String, required: true },
             userName: { type: String, required: true },
-            text: { type: String, required: true }
+            text: { type: String, required: true },
+            excluded: { type: [String], default: [] } // Ensure this is an array of strings
         }
-    ] // Initialize messages as an empty array if needed
+    ]
 });
+
 
 // Static method to update the imageId for a group
 

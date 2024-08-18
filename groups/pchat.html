@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to right, #e0f7fa, #b9fbc0);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #chat-container {
+            width: 100%;
+            height: 100%;
+            max-height: 100vh;
+            background: linear-gradient(to right, #e0f7fa, #b9fbc0);
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #00796b;
+            color: white;
+            border-bottom: 3px solid #004d40;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        #header h1 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+       
+        #call-button {
+          
+            color: #00796b;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+              }
+
+        
+        #messages {
+            list-style-type: none;
+            margin: 0;
+            padding: 20px;
+            flex-grow: 1;
+            overflow-y: auto;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+/* Message container */
+#messages li {
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    max-width: 80%;
+    word-wrap: break-word; /* Ensure long words break */
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    /* Ensure content doesn't overflow */
+}
+
+/* Message content */
+.message-content {
+    flex-grow: 1; /* Allow content to take up available space */
+    word-break: break-word; /* Break long words */
+}
+
+/* Timestamp styling */
+.message-timestamp {
+    font-size: 12px;
+    font-style: italic;
+    white-space: nowrap; /* Prevent line break */
+    color: inherit; /* Inherit color from the message type */
+    margin-top: 5px; /* Space above the timestamp */
+    align-self: flex-end; /* Align timestamp to the bottom right */
+}
+
+/* Sent message styling */
+.message-sent {
+    background: #00796b;
+    color: white;
+    align-self: flex-end;
+}
+
+/* Received message styling */
+.message-received {
+    background: #f1f8f4;
+    color: #00796b;
+    align-self: flex-start;
+}
+
+        #form {
+            display: flex;
+            padding: 0px;
+            padding-bottom: 5px;
+            border-top: 1px solid #eee;
+            background: linear-gradient(to right, #e0f7fa, #b9fbc0);
+            align-items: center;
+            gap: 10px;
+        }
+
+        #input {
+            flex-grow: 1;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            background: linear-gradient(to right, #00796b, #004d40);
+            color: white;
+            font-size: 16px;
+            border-radius: 20px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        button:hover {
+            background: #004d40;
+            transform: scale(1.05);
+        }
+        #popup-menu {
+        display: none; /* Hidden by default */
+        position: absolute;
+        top: 60px; /* Adjust based on your layout */
+        right: 15px; /* Adjust based on your layout */
+        background: #ffffff;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        width: 250px; /* Adjust width as needed */
+        max-height: 300px; /* Adjust height as needed */
+        overflow-y: auto;
+        z-index: 1000; /* Ensure it appears above other content */
+    }
+
+    #popup-menu ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    /* Popup menu list items */
+#popup-menu li {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+/* Checkbox styling */
+#popup-menu input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+/* Selected items styling */
+#popup-menu .selected {
+    background: #e0f2f1;
+}
+#video-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%; /* Full width for the popup */
+        height: 100%; /* Full height for the popup */
+        background: rgba(0, 0, 0, 0.7); /* Darker background for contrast */
+        border-radius: 15px; /* Rounded corners */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Soft shadow for depth */
+        overflow: hidden; /* Ensure no overflow */
+        position: relative; /* For absolute positioning of children */
+    }
+    #video-section {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        top:0%;
+        height: 100%; /* Adjust for controls height */
+        position: absolute;
+        overflow: hidden;
+    }
+   
+
+    .video-label {
+        position: absolute;
+        /* Semi-transparent background */
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: bold;
+        backdrop-filter: blur(5px); /* Optional blur effect */
+    }
+    #call-duration {
+    position: absolute; /* Absolute positioning */
+ top: 10px; /* Adjust distance from the top as needed */
+    right: 50%; /* Align to the right */
+    z-index: 200; /* Ensure it's above other elements */
+    font-size: 12px; /* Adjust font size as needed */
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent background 
+    padding: 5px 10px; /* Padding for better readability */
+    border-radius: 5px; /* Rounded corners for background */
+    color: white; /* White text color */
+}
+  
+    #controls {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        padding: 5px;
+        background: transparent; /* Dark background for the controls */
+        border-radius: 15px; /* Rounded corners */
+        position: absolute; 
+        top:90%;/* Stick to the bottom of the container */
+        bottom: 0; 
+        width: 100%;
+        justify-content: center;
+    }
+   
+    #modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+    #modal-content {
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        width: 300px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Shadow for modal */
+    }
+    #modal-content p {
+        color: green;
+        margin: 0;
+        font-size: 18px;
+    }
+    #modal-content button {
+        margin: 10px;
+    }
+    #local-muted-label {
+    bottom: 10%; /* Center vertically */
+    right: 20px; /* Center horizontally */
+    transform: translate(-10%, -30%); /* Center label inside local video */
+    z-index: 100;
+    /* Red background for visibility */
+    padding: 5px 10px; /* Padding for better visibility */
+}
+
+#remote-muted-label {
+    bottom: 50%; /* Center vertically */
+    left: 50%; /* Center horizontally */
+    transform: translate(-50%, -50%); /* Center label inside remote video */
+    z-index: 100;
+   /* Red background for visibility */
+    padding: 5px 10px; /* Padding for better visibility */
+}
+    #popup-menu2 {
+        position: fixed; /* Fixed position for the popup */
+        display: none;
+        width: 80%; /* Adjust as needed */
+        height: 80%; /* Adjust as needed */
+        border: 1px solid #ccc;
+        border-radius: 15px;
+        background-color: rgba(0, 0, 0, 0.9); /* Dark background for better contrast */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        top: 10%; /* Center the popup */
+        left: 10%; /* Center the popup */
+        overflow: hidden; /* Ensure no overflow */
+        z-index: 1000;
+    }
+
+    #ac-call-duration {
+    position: absolute; /* Absolute positioning */
+ top: 60px; /* Adjust distance from the top as needed */
+    right: 50%; /* Align to the right */
+    z-index: 200; /* Ensure it's above other elements */
+    font-size: 12px; /* Adjust font size as needed */
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent background 
+    padding: 5px 10px; /* Padding for better readability */
+    border-radius: 5px; /* Rounded corners for background */
+    color: white; /* White text color */
+}
+  
+    
+    #ac-controls {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        padding: 30px;
+        background: transparent; /* Dark background for the ac-controls */
+        border-radius: 50%; /* Rounded corners */
+        position: absolute; 
+        /* Stick to the bottom of the container */
+        bottom: 0; 
+        width: 100%;
+        justify-content: center;
+    }
+    #popupmenu1 {
+        position: fixed; /* Fixed position for the popup */
+        display: none;
+        width: 300px; /* Adjust as needed */
+        height:200px; /* Adjust as needed */
+        border: 1px solid #ccc;
+        border-radius: 15px;
+        background:linear-gradient(to right, #e0f7fa, #b9fbc0); /* Gradient background */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Adding a shadow for better visibility */
+   top: 10%; /* Center the popup */
+        left: 10%; /* Center the popup */
+        overflow: hidden; 
+        z-index: 1000;
+        justify-content: center;/* Ensure no overflow */
+    }
+    #ac-remote-video{
+       display: none;
+    }
+    #ac-local-video{
+       display: none;
+    }
+    #acmodal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+    #acmodal-content {
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        width: 300px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Shadow for acmodal */
+    }
+    #acmodal-content p {
+        color: green;
+        margin: 0;
+        font-size: 18px;
+    }
+    #acmodal-content button {
+        margin: 10px;
+    }
+   </style>
+   
+     <script src="/socket.io/socket.io.js"></script>
+     
+ </head>
+ <body>
+    <div id="popupmenu1">
+        <h1 id="audi-name">Audio Call</h1>
+        <div id="ac-call-duration">00:00</div>
+        <div id="ac-controls">
+           
+            <button id="mute-audio-button1" style="display: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-mic-fill" viewBox="0 0 16 16">
+                    <path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0z"/>
+                    <path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5"/>
+                  </svg>
+              </button>
+              <button id="audio-hangup-button" >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-telephone-fill" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.68.68 0 0 0 .178.643l2.457 2.457a.68.68 0 0 0 .644.178l2.189-.547a1.75 1.75 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.6 18.6 0 0 1-7.01-4.42 18.6 18.6 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877z"/>
+                  </svg>
+            </button>
+
+             </div>
+      
+    </div>
+     <video id="ac-remote-video" autoplay></video>
+                
+    <video id="ac-local-video" autoplay ></video>
+   
+    <div id="popup-menu2">
+        <div id="video-container">
+            <div id="call-duration">00:00</div>
+            <div id="video-section">
+                <video id="remote-video" autoplay></video>
+                
+                <video id="local-video" autoplay muted></video>
+             
+                <div id="local-muted-label" class="video-label" style="display: none;">Muted</div>
+                <div id="remote-muted-label" class="video-label" style="display: none;">Muted</div>
+            </div>
+            <div id="controls">
+                
+                <button id="mute-audio-button" >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-mic-fill" viewBox="0 0 16 16">
+                        <path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0z"/>
+                        <path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5"/>
+                      </svg>
+                  </button>
+                   <!-- Added duration display -->
+
+                <button id="stop-video-button" style="display: none;"> 
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-camera-video-fill" viewBox="0 0 16 16">
+  <path fill-rule="evenodd" d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2z"/>
+</svg>
+                </button>
+                <button id="hangup-button" >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-telephone-fill" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.68.68 0 0 0 .178.643l2.457 2.457a.68.68 0 0 0 .644.178l2.189-.547a1.75 1.75 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.6 18.6 0 0 1-7.01-4.42 18.6 18.6 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877z"/>
+                      </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="chat-container">
+        <div id="header">
+            <h1 id="name">Chat</h1>
+            <div id="header2">
+                <button id="audio-call-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-telephone-fill" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.68.68 0 0 0 .178.643l2.457 2.457a.68.68 0 0 0 .644.178l2.189-.547a1.75 1.75 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.6 18.6 0 0 1-7.01-4.42 18.6 18.6 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877z"/>
+                      </svg>
+                </button>
+            <button id="call-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" class="bi bi-camera-video-fill" viewBox="0 0 16 10">
+                    <path fill-rule="evenodd" d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2z"/>
+                  </svg>
+            </button>
+            <button id="info-toggle">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 15">
+                <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>
+              </svg></button>
+        </div>
+        </div>
+        <ul id="messages"></ul>
+        <form id="form" action="">
+            <input id="input" autocomplete="off" placeholder="Type your message here..." />
+          
+            <button type="submit">Send</button>
+        </form>
+      
+        
+      
+        <!-- Add audio element for notification sound -->
+        <audio id="notification-sound" src="groups/notification.wav" preload="auto"></audio>
+    </div>
+    <div id="modal">
+        <div id="modal-content">
+            <p id="modal-message">Incoming video call...</p>
+            <button id="ok-button"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="green" class="bi bi-telephone-fill" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.68.68 0 0 0 .178.643l2.457 2.457a.68.68 0 0 0 .644.178l2.189-.547a1.75 1.75 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.6 18.6 0 0 1-7.01-4.42 18.6 18.6 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877z"/>
+              </svg></button>
+            <button id="no-button"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-telephone-fill" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.68.68 0 0 0 .178.643l2.457 2.457a.68.68 0 0 0 .644.178l2.189-.547a1.75 1.75 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.6 18.6 0 0 1-7.01-4.42 18.6 18.6 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877z"/>
+              </svg></button>
+        </div>
+    </div>
+    <div id="acmodal">
+        <div id="acmodal-content">
+            <p id="acmodal-message">Incoming audio call...</p>
+            <button id="ac-ok-button"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="green" class="bi bi-telephone-fill" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.68.68 0 0 0 .178.643l2.457 2.457a.68.68 0 0 0 .644.178l2.189-.547a1.75 1.75 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.6 18.6 0 0 1-7.01-4.42 18.6 18.6 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877z"/>
+              </svg></button>
+            <button id="ac-no-button"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-telephone-fill" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.68.68 0 0 0 .178.643l2.457 2.457a.68.68 0 0 0 .644.178l2.189-.547a1.75 1.75 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.6 18.6 0 0 1-7.01-4.42 18.6 18.6 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877z"/>
+              </svg></button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="p.js"> </script>
+    
+ </body>
+ </html>

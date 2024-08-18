@@ -17,6 +17,14 @@ const UserSchema = new mongoose.Schema({
     date: {
         type: Date,
         default: Date.now
+    },
+    groups: {
+        type: [String],
+        default: []
+    },
+    chats: {
+        type: [String],
+        default: []
     }
 });
 

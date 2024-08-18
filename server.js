@@ -14,7 +14,7 @@ const { GridFSBucket } = require('mongodb');
 const stream = require('stream');
  // Adjust the path as necessary
  const cors = require('cors');
- 
+ const Chat = require('./models/chat');
    
 
 const app = express();
@@ -28,7 +28,7 @@ const MONGODB_URI = 'mongodb+srv://himanshuu932:88087408601@cluster0.lu2g8bw.mon
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
+
 
 // Connect to MongoDB
 mongoose.connect(MONGODB_URI, {
@@ -47,22 +47,29 @@ app.post('/signup', async (req, res) => {
         let user = await User.findOne({ email });
       
         if (user) {
-            return res.status(401).json({success: false, msg: 'User already exists' });
+            return res.status(400).json({ success: false, msg: 'User already exists' });
         }
 
-        user = new User({ name, email, password });
+        user = new User({
+            name,
+            email,
+            password,
+            groups: [],  // Initialized as empty arrays
+            chats: []
+        });
 
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(password, salt);
 
         await user.save();
 
-        res.status(200).json({ success: true, message: 'User registered successfully' });
+        res.status(201).json({ success: true, message: 'User registered successfully' });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
     }
 });
+
 app.get('/messages/:groupId', async (req, res) => {
     try {
         const groupId = req.params.groupId;
@@ -131,13 +138,14 @@ app.post('/login', async (req, res) => {
 
 // Serve the HTML files
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "login.html")));
-app.get("/index.html", (req, res) => res.sendFile(path.join(__dirname, "groups", "index.html")));
+app.get("/index.html", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 app.get("/chat.html", (req, res) => res.sendFile(path.join(__dirname, "groups", "chat.html")));
 app.get("/info.html", (req, res) => res.sendFile(path.join(__dirname, "groups", "info.html")));
 app.get("/groups.html", (req, res) => res.sendFile(path.join(__dirname, "groups", "groups.html")));
 app.get("/infoscript.js", (req, res) => res.sendFile(path.join(__dirname, "groups", "infoscript.js")));
 app.get("/js.js", (req, res) => res.sendFile(path.join(__dirname, "groups", "js.js")));
 app.get("/chat.js", (req, res) => res.sendFile(path.join(__dirname, "groups", "chat.js")));
+app.get("/p.js", (req, res) => res.sendFile(path.join(__dirname, "groups", "p.js")));
 app.get("/lg.js", (req, res) => res.sendFile(path.join(__dirname, "public", "lg.js")));
 app.get("/groups/notification.wav ", (req, res) => res.sendFile(path.join(__dirname, "public", "notification.wav ")));
 
@@ -173,12 +181,15 @@ app.post('/groups', async (req, res) => {
             messages: [] // Initialize messages as an empty array
         });
 
-        await group.save();
-        res.status(201).json(group);
+        const savedGroup = await group.save();
+        await User.findByIdAndUpdate(userId, { $push: { groups: savedGroup._id } });
+
+        res.status(201).json(savedGroup);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 });
+
 
 
 
@@ -189,9 +200,159 @@ app.get('/groups', async (req, res) => {
 
 });
 
+app.get('/groups/:userId', async (req, res) => {
+    const userId = req.params.userId;
+
+    try {
+        // Find the user
+        const user = await User.findById(userId).populate('groups'); // Assuming 'groups' is an array of group IDs
+        
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Respond with the user's groups
+        res.json(user.groups);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+app.post('/create-chat', async (req, res) => {
+    const { username1,username2,userId, otherUserId } = req.body;
+
+    if (!userId || !otherUserId) {
+        return res.status(400).json({ message: 'User IDs are required' });
+    }
+
+    try {
+        const newChat = new Chat({
+            users:[username1,username2],
+            members: [userId, otherUserId],
+            messages: [] // Initialize with an empty message array
+        });
+
+        await newChat.save();
+        res.status(201).json({ message: 'Chat created successfully', chatId: newChat._id });
+    } catch (error) {
+        console.error('Error creating chat:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+app.get('/all-chats', async (req, res) => {
+    try {
+        const chats = await Chat.find({});
+        res.status(200).json({ chats });
+    } catch (error) {
+        console.error('Error fetching chats:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+app.get('/get-users/:id', async (req, res) => {
+    const chatId = req.params.id;
+
+    try {
+        const chat = await Chat.findById(chatId);
+        if (!chat) {
+            return res.status(404).json({ message: 'Chat not found' });
+        }
+        res.status(200).json({ users: chat.users });
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+app.post('/add-message/:chatId', async (req, res) => {
+    const chatId = req.params.chatId;
+    const { timestamp, userName, text, excluded } = req.body;
+
+    try {
+        const chat = await Chat.findById(chatId);
+        if (!chat) {
+            return res.status(404).json({ message: 'Chat not found' });
+        }
+
+        // Add new message to the chat
+        chat.messages.push({ timestamp, userName, text, excluded });
+        await chat.save();
+
+        res.status(200).json({ message: 'Message added successfully', chat });
+    } catch (error) {
+        console.error('Error adding message:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+app.get('/pmessages/:groupId', async (req, res) => {
+    try {
+        const groupId = req.params.groupId;
+        
+        // Find the group by its ID
+        const groupChat = await Chat.findById(groupId);
+       
+        if (groupChat) {
+            res.json(groupChat.messages);
+        } else {
+            res.status(404).send('No messages found for this group');
+        }
+    } catch (err) {
+       
+        res.status(500).send('Error fetching messages');
+    }
+});
+
+
 app.get('/chat', (req, res) => {
     res.sendFile(path.join(__dirname, 'groups', 'chat.html'));
 });
+app.get('/pchat', (req, res) => {
+    res.sendFile(path.join(__dirname, 'groups', 'pchat.html'));
+});
+//feych chatids
+
+
+// In your Express.js routes file
+app.get('/get-user-chats/:userId', async (req, res) => {
+   
+    try {
+        const user = await User.findById(req.params.userId).exec();
+       
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json({ chats: user.chats });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+//add group in group array
+app.post('/users/:userId/groups', async (req, res) => {
+    const userId = req.params.userId;
+    const { groupId } = req.body; // The group ID to be added
+
+    if (!groupId) {
+        return res.status(400).json({ error: 'Group ID is required' });
+    }
+
+    try {
+        // Find the user and update the groups array
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { $addToSet: { groups: groupId } }, // Add groupId if it doesn't already exist
+            { new: true, runValidators: true } // Return the updated document and run validators
+        );
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json(user);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+//delete group from group array
 app.delete('/groups/:id/:userId', async (req, res) => {
     const { id, userId } = req.params;
 
@@ -214,8 +375,78 @@ app.delete('/groups/:id/:userId', async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+//fetch all users with particular gid in array
+// Fetch users who are part of a specific group
+app.get('/users-by-group/:groupId', async (req, res) => {
+    const { groupId } = req.params;
+
+    try {
+        // Find users with the specified groupId in their groups array
+        const users = await User.find({ groups: groupId }).select('_id name email');
+
+        // Return the list of users
+        res.json({ users });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch users' });
+    }
+});
+app.delete('/groups/:groupId/', async (req, res) => {
+    const { groupId } = req.params;
+
+    try {
+        // Remove the groupId from the groups array of all users
+        await User.updateMany(
+            { groups: groupId },
+            { $pull: { groups: groupId } }
+        );
+
+        // Delete the group
+        await Group.findByIdAndDelete(groupId);
+
+        res.status(200).json({ message: 'Group and associated user data deleted successfully.' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to delete group and update users' });
+    }
+});
 
 
+app.delete('/users/:userId/groups/:groupId', async (req, res) => {
+    const userId = req.params.userId;
+    const groupId = req.params.groupId;
+
+    try {
+        // Find the user and update the groups array
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { $pull: { groups: groupId } }, // Remove groupId from the array
+            { new: true, runValidators: true } // Return the updated document and run validators
+        );
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json(user);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.get('/group/:groupId', async (req, res) => {
+    const groupId = req.params.groupId;
+
+    try {
+        const group = await Group.findById(groupId).populate('imageId'); // Populate imageId if needed
+        if (!group) {
+            return res.status(404).json({ error: 'Group not found' });
+        }
+        res.json(group);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 // Endpoint to get group name by ID
 app.get('/group/:id', async (req, res) => {
     const { id } = req.params;
@@ -452,6 +683,7 @@ io.on('connection', (socket) => {
         io.to(groupId).emit('audio message', { audioUrl, userName });
     });
     // Handle join group
+    
     socket.on('join group', (groupName, userName) => {
         currentGroupName = groupName;
         currentUserName = userName;
@@ -462,10 +694,68 @@ io.on('connection', (socket) => {
         socket.on('chat message', (data) => {
             const { groupId, message, selectedMembers } = data;
             const excluded=selectedMembers;
-        
+           
             // Emit the message to all clients in the specified group
             io.to(groupId).emit('chat message', { message, excluded });
         });
+
+        socket.on('joinCall', (roomId) => {
+            socket.join(roomId);
+          
+            console.log(`User ${socket.id} joined room ${roomId}`);
+        });    
+
+        // Relay signaling messages between clients in the same room
+        socket.on('offer', (roomId, offer) => {
+            socket.to(roomId).emit('offer', offer);
+        });
+    
+        socket.on('answer', (roomId, answer) => {
+            socket.to(roomId).emit('answer', answer);
+        });
+    
+        socket.on('candidate', (roomId, candidate) => {
+            socket.to(roomId).emit('candidate', candidate);
+        });
+    
+        // Handle hangup event
+        socket.on('hangup', (roomId) => {
+            socket.to(roomId).emit('hangup');
+        });
+        socket.on('mute', (roomId,isMuted) => {
+            socket.to(roomId).emit('mute',isMuted);
+        });
+        socket.on('video', (roomId,isVideoStopped) => {
+            socket.to(roomId).emit('video',isVideoStopped);
+        });
+    
+        socket.on('joinAudioCall', (roomId) => {
+            socket.join(roomId);
+          
+            console.log(`User ${socket.id} joined room ${roomId}`);
+        });
+      
+        // Relay signaling messages between clients in the same room
+        socket.on('offerAudio', (roomId, offerAudio) => {
+            socket.to(roomId).emit('offerAudio', offerAudio);
+        });
+    
+        socket.on('answerAudio', (roomId, answerAudio) => {
+            socket.to(roomId).emit('answerAudio', answerAudio);
+        });
+    
+        socket.on('candidateAudio', (roomId, candidate) => {
+            socket.to(roomId).emit('candidateAudio', candidate);
+        });
+    
+        // Handle hangupAudio event
+        socket.on('hangupAudio', (roomId) => {
+            socket.to(roomId).emit('hangupAudio');
+        });
+        socket.on('muteAudio', (roomId,isMuted) => {
+            socket.to(roomId).emit('muteAudio',isMuted);
+        });
+       
         
 
         // Handle user leaving explicitly
@@ -475,6 +765,8 @@ io.on('connection', (socket) => {
             }
         });
     });
+   
+    
 
     // Handle user disconnect
     socket.on('disconnect', () => {

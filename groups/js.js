@@ -13,7 +13,7 @@ function showContainer(containerId) {
         activeContainer.classList.add('active');
         if(containerId === 'container1')
         
-            fetchAllUsernames();
+            fetchAllUsernames();     
     }
 }
 
@@ -102,10 +102,7 @@ function showContainer(containerId) {
             // Handle any errors that occur during the fetch
             alert(`Error: ${error.message}`);
         }
-    }
-    
-    
-    
+    }  
         async function fetchImage(imageId) {
     try {
     // Send GET request to fetch image data and metadata
@@ -141,21 +138,13 @@ function showContainer(containerId) {
     }
     }
     async   function addGroupToList(group) {
-        
+      //  alert(group._id)
         const groupsList = document.getElementById('groups');
         const listItem = document.createElement('li');
         listItem.id = `group-${group._id}`;
         const imgid=await fetchImageId(group._id);
        
  // Fetch users who are part of the group
-           
-
-
-
-
-
-
-
         // Use a placeholder image or actual image URL
         const imageUrl =  await fetchImage(imgid); 
     
@@ -183,26 +172,31 @@ function showContainer(containerId) {
         }
 
         const groupIds = await response.json();
-        
+     
         // Fetch details for each group
         const groupPromises = groupIds.map(async (groupId) => {
-            try {
+            try {  
                 const groupResponse = await fetch(`/group/${groupId}`);
                 if (!groupResponse.ok) {
                     throw new Error(`Failed to fetch group with ID ${groupId}`);
                 }
+
+
+
+              
                 return await groupResponse.json();
             } catch (error) {
                 console.error(error);
-                return null; // Return null or a default value if an error occurs
+                 // Return null or a default value if an error occurs
             }
         });
 
         const groups = await Promise.all(groupPromises);
-
+       
         // Add each group to the list
         groups.forEach(group => {
             if (group) {
+               // alert(group.id)
                 addGroupToList(group);
             }
         });
@@ -217,9 +211,7 @@ function showContainer(containerId) {
     function joinGroup(id) {
         window.location.href = `/chat?groupId=${encodeURIComponent(id)}`;
     }
-    window.onload = function() {
-    fetchAllUsernames();
-};
+  
 const chatArray=[];
       async function fetchAllUsernames(chatArray) {
            
@@ -325,7 +317,7 @@ const chatArray=[];
                     }
                 });
 
-                fetchAllUsernames(chatArray);
+               // fetchAllUsernames(chatArray);
 
             } else {
                 console.log('No chats found');
@@ -376,6 +368,12 @@ fetchAllChats();
     });
 }
 
+// Create Join button
+                        document.getElementById("info").addEventListener('click', () => {
+                            // Handle the join action
+                            var userId=localStorage.getItem('userId');
 
+                            window.location.href = `pinfo.html?userId=${userId}`;
+                        });
     document.addEventListener('DOMContentLoaded', fetchGroups);
    

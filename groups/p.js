@@ -4,7 +4,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     let userName = '';
     const urlParams = new URLSearchParams(window.location.search);
     const groupId = urlParams.get('chatId');
- 
+   let uid="";
+  const cuid=localStorage.getItem('userId');
     var selectedMembers = [];
 
   function getUserName() {
@@ -31,7 +32,9 @@ if (response.ok) {
     const data = await response.json();
     
     const users = data.users;
-    const groupName = users.find(user => user !== userName) || 'Unknown Group'; // Adjust according to your logic
+    const members=data.members;
+    const groupName = users.find(user => user !== userName) || 'Unknown Group'; 
+     uid=members.find(user => user !== cuid)// Adjust according to your logic
     return groupName;
 } else {
     console.error('Error fetching users:', response.statusText);
@@ -186,7 +189,7 @@ console.error('Fetch error:', error);
     });
 
     infoToggle.addEventListener('click', () => {
-        window.location.href = `info.html?groupId=${groupId}&username=${encodeURIComponent(userName)}`;
+        window.location.href = `pinfo.html?userId=${uid}&username=${encodeURIComponent(userName)}`;
     });
    
   function enablevideocall()

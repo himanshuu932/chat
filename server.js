@@ -141,8 +141,10 @@ app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "login.ht
 app.get("/index.html", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 app.get("/chat.html", (req, res) => res.sendFile(path.join(__dirname, "groups", "chat.html")));
 app.get("/info.html", (req, res) => res.sendFile(path.join(__dirname, "groups", "info.html")));
+app.get("/pinfo.html", (req, res) => res.sendFile(path.join(__dirname, "groups", "pinfo.html")));
 app.get("/groups.html", (req, res) => res.sendFile(path.join(__dirname, "groups", "groups.html")));
 app.get("/infoscript.js", (req, res) => res.sendFile(path.join(__dirname, "groups", "infoscript.js")));
+app.get("/pinfoscript.js", (req, res) => res.sendFile(path.join(__dirname, "groups", "pinfoscript.js")));
 app.get("/js.js", (req, res) => res.sendFile(path.join(__dirname, "groups", "js.js")));
 app.get("/chat.js", (req, res) => res.sendFile(path.join(__dirname, "groups", "chat.js")));
 app.get("/p.js", (req, res) => res.sendFile(path.join(__dirname, "groups", "p.js")));
@@ -202,7 +204,7 @@ app.get('/groups', async (req, res) => {
 
 app.get('/groups/:userId', async (req, res) => {
     const userId = req.params.userId;
-
+    console.log(userId)
     try {
         // Find the user
         const user = await User.findById(userId).populate('groups'); // Assuming 'groups' is an array of group IDs
@@ -216,6 +218,26 @@ app.get('/groups/:userId', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal server error' });
+    }
+});
+app.get('/user/:userId', async (req, res) => {
+    try {
+        const userId = req.params.userId; // Get userId from request parameters
+
+        // Find the user by ID
+        const user = await User.findById(userId);
+
+        // If user not found, return a 404 error
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Return the user details
+        res.json(user);
+    } catch (err) {
+        // Handle potential errors, such as an invalid ObjectId
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
     }
 });
 app.post('/create-chat', async (req, res) => {
@@ -256,7 +278,7 @@ app.get('/get-users/:id', async (req, res) => {
         if (!chat) {
             return res.status(404).json({ message: 'Chat not found' });
         }
-        res.status(200).json({ users: chat.users });
+        res.status(200).json({ users: chat.users ,members:chat.members});
     } catch (error) {
         console.error('Error fetching users:', error);
         res.status(500).json({ message: 'Internal Server Error' });
@@ -375,6 +397,25 @@ app.delete('/groups/:id/:userId', async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+app.get('/group/:groupId', async (req, res) => {
+    try {
+        const groupId = req.params.groupId;
+
+        // Find the group by ID and select only the 'name' field
+        const group = await Group.findById(groupId).select('name');
+
+        if (!group) {
+            return res.status(404).json({ error: 'Group not found' });
+        }
+
+        // Respond with the group name
+        res.status(200).json({ name: group.name ,_id:group._id});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'An error occurred while fetching the group name' });
+    }
+});
+
 //fetch all users with particular gid in array
 // Fetch users who are part of a specific group
 app.get('/users-by-group/:groupId', async (req, res) => {

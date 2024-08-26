@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Audio Call</title>
+</head>
+<body>
+    <h1>WebRTC Audio Call</h1>
+    <button id="startCall">Start Call</button>
+    <button id="endCall" disabled>End Call</button>
+    <audio id="remoteAudio" autoplay></audio>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let localStream;
+        let remoteStream;
+        let peerConnection;
+        const roomId = '12';  // Predefined room ID
+
+        const socket = io();  // Connect to the signaling server
+        const servers = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' }  // Public STUN server
+            ]
+        };
+        
+        const startCallButton = document.getElementById('startCall');
+        const endCallButton = document.getElementById('endCall');
+        const remoteAudio = document.getElementById('remoteAudio');
+
+        // Join the room when the page loads
+        socket.emit('join-room', roomId);
+
+        startCallButton.addEventListener('click', startCall);
+        endCallButton.addEventListener('click', endCall);
+
+        async function startCall() {
+            try {
+                // Get local media stream
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                console.log('Local stream obtained.');
+
+                // Setup peer connection
+                peerConnection = new RTCPeerConnection(servers);
+                peerConnection.addStream(localStream);
+
+                // Listen for remote stream
+                peerConnection.onaddstream = (event) => {
+                    remoteStream = event.stream;
+                    remoteAudio.srcObject = remoteStream;
+                };
+
+                // Handle ICE candidate events
+                peerConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        socket.emit('ice-candidate', event.candidate, roomId);
+                    }
+                };
+
+                // Create and send offer
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                socket.emit('offer', offer, roomId);
+
+                console.log('Call started.');
+                startCallButton.disabled = true;
+                endCallButton.disabled = false;
+
+            } catch (error) {
+                console.error('Error starting call:', error);
+            }
+        }
+
+        async function endCall() {
+            try {
+                if (peerConnection) {
+                    peerConnection.close();
+                    peerConnection = null;
+                }
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                }
+                remoteAudio.srcObject = null;
+
+                console.log('Call ended.');
+                startCallButton.disabled = false;
+                endCallButton.disabled = true;
+            } catch (error) {
+                console.error('Error ending call:', error);
+            }
+        }
+
+        // Handle incoming offer
+        socket.on('offer', async (offer) => {
+            try {
+                // Create and configure peer connection
+                peerConnection = new RTCPeerConnection(servers);
+                peerConnection.addStream(await navigator.mediaDevices.getUserMedia({ audio: true }));
+                peerConnection.onaddstream = (event) => {
+                    remoteAudio.srcObject = event.stream;
+                };
+
+                // Set remote description and create an answer
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                socket.emit('answer', answer, roomId);
+
+            } catch (error) {
+                console.error('Error handling offer:', error);
+            }
+        });
+
+        // Handle incoming answer
+        socket.on('answer', async (answer) => {
+            try {
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+            } catch (error) {
+                console.error('Error setting remote description:', error);
+            }
+        });
+
+        // Handle incoming ICE candidates
+        socket.on('ice-candidate', async (candidate) => {
+            try {
+                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+            } catch (error) {
+                console.error('Error adding received ice candidate', error);
+            }
+        });
+    </script>
+</body>
+</html>

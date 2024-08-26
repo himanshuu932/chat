@@ -1,10 +1,7 @@
   
     document.addEventListener('DOMContentLoaded', async (event) => { // Clear forms on page load
       
-           
-           
-        
-
+            
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('emaillogin').value;
@@ -32,7 +29,7 @@
                     setTimeout(() => {
                         document.getElementById('login-form').reset();
                         messageElement.textContent = '';
-                        window.location.href = '/groups.html';
+                        window.location.href = `/groups.html?name=${encodeURIComponent(data.name)}`;
                     }, 1000);
                 } else {
                     messageElement.style.color = 'red';

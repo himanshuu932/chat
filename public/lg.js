@@ -29,7 +29,7 @@
                     setTimeout(() => {
                         document.getElementById('login-form').reset();
                         messageElement.textContent = '';
-                        window.location.href = `/groups.html?name=${encodeURIComponent(data.name)}`;
+                        window.location.href = `/groups.html`;
                     }, 1000);
                 } else {
                     messageElement.style.color = 'red';

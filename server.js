@@ -54,6 +54,8 @@ app.post('/signup', async (req, res) => {
             name,
             email,
             password,
+            about:"this is a chitchat  user",
+            dp:"66cf95f896d2457a8b9d0e08",
             groups: [],  // Initialized as empty arrays
             chats: []
         });
@@ -135,7 +137,7 @@ app.post('/login', async (req, res) => {
         res.status(500).send('Server error');
     }
 });
-
+app.use(express.static(path.join(__dirname, 'public')));
 // Serve the HTML files
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "login.html")));
 app.get("/index.html", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
@@ -149,8 +151,10 @@ app.get("/js.js", (req, res) => res.sendFile(path.join(__dirname, "groups", "js.
 app.get("/chat.js", (req, res) => res.sendFile(path.join(__dirname, "groups", "chat.js")));
 app.get("/p.js", (req, res) => res.sendFile(path.join(__dirname, "groups", "p.js")));
 app.get("/lg.js", (req, res) => res.sendFile(path.join(__dirname, "public", "lg.js")));
-app.get("/groups/notification.wav ", (req, res) => res.sendFile(path.join(__dirname, "public", "notification.wav ")));
 
+app.get("/groups/notification.wav", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "notification.wav"));
+  });
 
 const Image = require('./models/Image.js');
 
@@ -192,6 +196,26 @@ app.post('/groups', async (req, res) => {
     }
 });
 
+app.get('/user/:id/image', async (req, res) => {
+    try {
+        // Get the user ID from the request parameters
+        const userId = req.params.id;
+        
+        // Find the user by ID, only select the dp field
+        const user = await User.findById(userId).select('dp');
+        
+        // If user is not found, send a 404 response
+        if (!user) {
+            return res.status(404).json({ success: false, msg: 'User not found' });
+        }
+
+        // Return the image ID (dp) in the response
+        res.status(200).json({ success: true, imageId: user.dp });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
 
 
 
@@ -402,14 +426,15 @@ app.get('/group/:groupId', async (req, res) => {
         const groupId = req.params.groupId;
 
         // Find the group by ID and select only the 'name' field
-        const group = await Group.findById(groupId).select('name');
+        const group = await Group.findById(groupId).select('name members _id');
+
 
         if (!group) {
             return res.status(404).json({ error: 'Group not found' });
         }
 
         // Respond with the group name
-        res.status(200).json({ name: group.name ,_id:group._id});
+        res.status(200).json({ name: group.name ,members:group.members,_id:group._id});
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'An error occurred while fetching the group name' });
@@ -489,7 +514,7 @@ app.get('/group/:groupId', async (req, res) => {
     }
 });
 // Endpoint to get group name by ID
-app.get('/group/:id', async (req, res) => {
+app.get('/groupinfo/:id', async (req, res) => {
     const { id } = req.params;
     try {
         // Find the group by ID
@@ -591,7 +616,77 @@ app.get('/is-admin/:groupId/:userId', async (req, res) => {
 });
 
 
+app.post('/changeinfo/:userId', async (req, res) => {
+    const userId = req.params.userId; // Extract the userId from the request parameters
+    const { name, prevName, about } = req.body; // Extract name, prevName, and about from the request body
+  
+    try {
+        const user = await User.findById(userId); // Find user by ID
+        if (user) {
+            // Update the user's name and about fields
+            if (name) user.name = name;
+            if (about) user.about = about;
+  
+            await user.save(); // Save the updated user information
+  
+            console.log("User updated successfully");
 
+            // Update the `chats` collection
+            if (prevName && name) {
+                // Update all chat entries with the previous username
+                await Chat.updateMany(
+                    { 'users': prevName },
+                    { $set: { 'users.$': name } }
+                );
+                console.log(`Updated all chat entries with username ${prevName} to ${name}`);
+
+                // Also update messages where the previous name is used
+                await Chat.updateMany(
+                    { 'messages.userName': prevName },
+                    { $set: { 'messages.$[elem].userName': name } },
+                    { arrayFilters: [{ 'elem.userName': prevName }] }
+                );
+                await Group.updateMany(
+                    { 'messages.userName': prevName },
+                    { $set: { 'messages.$[elem].userName': name } },
+                    { arrayFilters: [{ 'elem.userName': prevName }] }
+                );
+                console.log(`Updated all messages with username ${prevName} to ${name}`);
+            }
+  
+            res.status(200).json({ message: "User updated successfully", user });
+        } else {
+            res.status(404).json({ message: "User not found" });
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ message: "Error occurred", error: err.message });
+    }
+});
+
+
+  
+app.post('/user/:userId/update-image', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const imageId = req.body.imageId; // Assuming imageId is passed in the body
+        
+        // Find the user and update the dp field
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { dp: imageId },
+            { new: true }
+        );
+        
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json({ message: 'Image updated successfully', user });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
 app.post('/remove-user-from-group', async (req, res) => {
     const { groupId, userId } = req.body;
 
@@ -932,7 +1027,7 @@ function startServer() {
   }
 
 server.listen(PORT, () => {
-    console.log(`Server is listening on port ${PORT}`);
+    console.log(`Server is listening on port ${PORT}         http://127.0.0.1:4000/`);
 });
 
 

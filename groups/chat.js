@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (response.ok) {
             const data = await response.json();
             const { name, members } = data;
+            //alert(members)
             const memberDetails = await Promise.all(members.map(async (userId) => {
                 const result = await fetch(`/getusername/${userId}`, {
                     method: 'POST',
@@ -175,7 +176,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const messages = document.getElementById('messages');
     const infoToggle = document.getElementById('info-toggle');
 
-    const notificationSound = new Audio('/notification.wav');
+    const notificationSound = new Audio('./notification.wav');
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();

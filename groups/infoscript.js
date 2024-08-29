@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async (event) => {
    
     async function fetchGroupInfo(groupId) {
 try {await fetchImageId();  
-const response = await fetch(`/group/${groupId}`);
+const response = await fetch(`/groupinfo/${groupId}`);
 
 if (response.ok) {
     const data = await response.json();
@@ -106,7 +106,7 @@ if (response.ok) {
         const popupMenu = document.getElementById('popup-menu');
         popupMenu.innerHTML = ''; // Clear existing content
 
-        const groupMembersResponse = await fetch(`/group/${groupId}`);
+        const groupMembersResponse = await fetch(`/groupinfo/${groupId}`);
         const groupMembersData = await groupMembersResponse.json();
         const members = groupMembersData.members;
 
@@ -265,10 +265,10 @@ return false;
     fetchAllUsernames();
     });
     document.getElementById('back-button').addEventListener('click', () => {
-        window.location.href = `chat.html?groupId=${groupId}`;
+        window.history.back();
     });
     document.getElementById('chat-button').addEventListener('click', () => {
-        window.location.href = `chat.html?groupId=${groupId}`;
+        window.history.back();
     });
 
    
@@ -382,7 +382,7 @@ async function deleteimg(){
 
 async function updateGroup(imageId)
  { 
-    if( currentImageId!='66a53230fbc60a6e879983d2')
+    if( currentImageId!='66cf95f896d2457a8b9d0e08')
     await deleteimg();
 
     try {

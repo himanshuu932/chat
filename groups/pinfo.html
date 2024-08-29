@@ -5,247 +5,344 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personal Info</title>
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(to right, #e0f7fa, #80deea);
-        margin: 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-    }
-    
-    .card {
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        width: 350px;
-        padding: 20px;
-        text-align: center;
-        position: relative;
-        transition: width 0.3s ease;
-    }
-    
-    #header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-    
-    #back-button {
-        background: #00796b;
-        border: none;
-        width: 40px; /* Explicit width */
-        height: 40px; /* Explicit height */
-        border-radius: 50%; /* Circular shape */
-        color: white;
-        cursor: pointer;
-        transition: transform 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px; /* Adjust based on your design */
-    }
-    
-    #back-button:hover {
-        transform: scale(1.1);
-    }
-    
-    #header h1 {
-        margin: 0;
-        font-size: 24px;
-        color: #00796b;
-    }
-    
-    .profile-section {
-        margin-bottom: 20px;
-    }
-    
-    .profile-section img {
-        width: 120px; /* Explicit width */
-        height: 120px; /* Explicit height */
-        border-radius: 50%; /* Circular shape */
-        object-fit: cover;
-        border: 4px solid #00796b;
-        margin-bottom: 15px;
-        aspect-ratio: 1 / 1; /* Maintains aspect ratio */
-        transition: width 0.3s ease, height 0.3s ease;
-    }
-    
-    .profile-section h2 {
-        font-size: 24px;
-        color: #00796b;
-        margin: 0;
-    }
-    
-    .details-section {
-        text-align: left;
-        margin: 15px 0;
-    }
-    
-    .details-section h3 {
-        color: #004d40;
-        font-size: 20px;
-        margin: 10px 0;
-    }
-    
-    .details-section p {
-        font-size: 16px;
-        color: #555;
-    }
-    
-    #change-image-popup {
-        position: absolute;
-        display: none;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: white;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        z-index: 1000;
-    }
-    
-    #change-image-popup input[type="file"] {
-        margin: 10px 0;
-    }
-    
-    #change-image-popup button {
-        background: #00796b;
-        border: none;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background 0.3s;
-    }
-    
-    #change-image-popup button:hover {
-        background: #004d40;
-    }
-    
-    button {
-        background: #00796b;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background 0.3s;
-        margin-top: 15px;
-    }
-    
-    button:hover {
-        background: #004d40;
-    }
-    
-    /* Responsive Styles */
-    @media (max-width: 768px) {
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, #e0f7fa, #80deea);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Subtle animated background */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #e0f7fa, #80deea);
+            animation: backgroundMove 8s infinite alternate;
+            z-index: -1;
+        }
+
+        @keyframes backgroundMove {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 100% 50%;
+            }
+        }
+
         .card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             width: 100%;
-            margin: 0 15px;
+            max-width: 900px;
             padding: 20px;
-            box-sizing: border-box;
+            text-align: center;
+            position: relative;
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
-    
-        #header h1 {
-            font-size: 20px;
+
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
         }
-    
-        .profile-section img {
-            width: 100px;
-            height: 100px;
+
+        #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
-    
-        .profile-section h2 {
-            font-size: 20px;
-        }
-    
-        .details-section h3 {
+
+        #back-button {
+            background: #00796b;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 18px;
         }
-    
-        .details-section p {
-            font-size: 14px;
+
+        #back-button:hover {
+            transform: scale(1.1);
         }
-    
-        button {
+
+        #header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #00796b;
+        }
+
+        .profile-section {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .profile-section img {
             width: 100%;
-            padding: 12px 0;
+            max-width: 200px;
+            height: auto;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #00796b;
+            margin-bottom: 15px;
+            transition: width 0.3s ease, height 0.3s ease;
         }
-    }
-    
-    @media (max-width: 480px) {
-        .profile-section img {
-            width: 80px;
-            height: 80px;
-        }
-    
+
         .profile-section h2 {
-            font-size: 18px;
+            font-size: 24px;
+            color: #00796b;
+            margin: 0;
         }
-    
-        #header h1 {
-            font-size: 18px;
+
+        #change-image-button {
+            background: #00796b;
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.3s;
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
         }
-    
+
+        #change-image-button:hover {
+            background: #004d40;
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 1);
+        }
+
+        .details-section {
+            text-align: left;
+            margin: 15px 0;
+        }
+
         .details-section h3 {
+            color: #004d40;
+            font-size: 20px;
+            margin: 10px 0;
+        }
+
+        .details-section p {
             font-size: 16px;
+            color: #555;
         }
-    
-        .details-section p {
-            font-size: 12px;
+
+        #change-image-popup {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            opacity: 0;
+            z-index: 1000;
         }
-    
-        button {
+
+        #change-image-popup.show {
+            display: flex;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            padding: 10px 0;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
         }
-    }
-     </style>
+
+        #overlay.show {
+            display: block;
+        }
+
+        button {
+            background: #00796b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.3s;
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
+        }
+
+        button:hover {
+            background: #004d40;
+            transform: translateY(-3px);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 1);
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        #change-image-button,
+        #edit-button {
+            flex: 1;
+            margin: 0 5px;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .card {
+                width: 100%;
+                margin: 0 15px;
+                padding: 20px;
+                box-sizing: border-box;
+            }
+
+            #header h1 {
+                font-size: 20px;
+            }
+
+            .profile-section img {
+                max-width: 150px;
+            }
+
+            .profile-section h2 {
+                font-size: 20px;
+            }
+
+            .details-section h3 {
+                font-size: 18px;
+            }
+
+            .details-section p {
+                font-size: 14px;
+            }
+
+            button {
+                width: 100%;
+                padding: 12px 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                           height: 100%;
+            }
+
+            .container-fluid {
+                height: 100%;
+            }
+
+            .card {
+                width: 100%;
+                height: 10%;
+                margin: 0;
+                border-radius: 0;
+                padding: 10px;
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
+               
+            }
+
+            .profile-section img {
+                max-width: 200px;
+                max-height: 200px;
+            }
+
+            .profile-section h2 {
+                font-size: 24px;
+            }
+
+            #header h1 {
+                font-size: 24px;
+            }
+
+            .details-section h3 {
+                font-size: 22px;
+            }
+
+            .details-section p {
+                font-size: 18px;
+            }
+
+            button {
+                width: 100%;
+                padding: 10px 0;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <div class="card">
-        <div id="header">
-            <button id="back-button">↩️</button>
-            <h1>Personal Info</h1>
-        </div>
+    <div class="container-fluid d-flex justify-content-center align-items-center">
+        <div class="card">
+            <div id="header">
+                <button id="back-button">↩️</button>
+                <h1>Personal Info</h1>
+            </div>
 
-        <div class="profile-section">
-            <img src="https://picsum.photos/120" alt="Profile Image" id="profile-img">
-            <h2 id="name">John Doe</h2>
-        </div>
+            <div class="profile-section">
+                <img src="https://picsum.photos/120" alt="Profile Image" id="profile-img">
+                <h2 id="name">John Doe</h2>
+            </div>
 
-        <div class="details-section">
-            <h3>About</h3>
-            <p id="about">Software engineer with a passion for technology and design.</p>
+            <div class="details-section">
+                <h3>About</h3>
+                <p id="about">Software engineer with a passion for technology and design.</p>
 
-            <h3>Email</h3>
-            <p id="email">john.doe@example.com</p>
+                <h3>Email</h3>
+                <p id="email">john.doe@example.com</p>
 
-            <h3>Groups</h3>
-            <p id="phone">no groups</p>
+                <h3>Groups</h3>
+                <p id="phone"></p>
+            </div>
 
-         
-        </div>
+            <div class="button-container">
+                <button id="change-image-button">📷</button>
+                <button id="edit-button">Edit Info</button>
+            </div>
 
-        <button id="edit-button">Edit Info</button>
+            <div id="overlay"></div>
 
-        <div id="change-image-popup">
-            <form id="uploadForm">
-                <label for="file-upload">Choose a new image:</label>
-                <input type="file" id="file-upload" name="image" accept="image/*" required />
-                <button type="submit">Upload Image</button>
-            </form>
+            <div id="change-image-popup">
+                <form id="uploadForm">
+                    <label for="file-upload">Choose a new image:</label>
+                    <input type="file" id="file-upload" name="image" accept="image/*" required />
+                    <button type="submit">Upload Image</button>
+                </form>
+            </div>
         </div>
     </div>
-
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="pinfoscript.js"></script>
 </body>
 

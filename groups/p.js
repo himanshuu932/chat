@@ -62,7 +62,7 @@ return null;
     const messages = document.getElementById('messages');
     const infoToggle = document.getElementById('info-toggle');
   
-    const notificationSound = new Audio('/notification.wav');
+    const notificationSound = new Audio('/groups/notification.wav');
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -247,7 +247,7 @@ let called = false;
 async function startCall() {
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     localVideo.srcObject = localStream;
-
+    notificationSound.play();
     peerConnection = new RTCPeerConnection(configuration);
 
     peerConnection.onicecandidate = (event) => {

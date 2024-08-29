@@ -10,10 +10,15 @@ const UserSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    about: {
+        type: String,
+        required: true
+    },
     password: {
         type: String,
         required: true
     },
+    dp: { type: mongoose.Schema.Types.ObjectId, ref: 'Image' },
     date: {
         type: Date,
         default: Date.now
